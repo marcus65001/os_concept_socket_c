@@ -80,7 +80,7 @@ int main(int argc, char *argv[]){
 
     int socket_desc , client_sock , c , read_size;
 	struct sockaddr_in server , client;
-	char client_message[MAX_MSG_LEN];
+	char message[MAX_MSG_LEN];
 	
 	//Create socket
 	socket_desc = socket(AF_INET , SOCK_STREAM|SOCK_NONBLOCK , 0);
@@ -109,7 +109,6 @@ int main(int argc, char *argv[]){
 	
 	//Accept and incoming connection
 	puts("Waiting for incoming connections...");
-    clock_gettime(CLOCK_REALTIME, &start_time);
 
     tick();
     while (!timeout()){
@@ -131,13 +130,15 @@ int main(int argc, char *argv[]){
 
         while (!timeout()){
             //Receive a message from client
-            while( (read_size = recv(client_sock , client_message , MAX_MSG_LEN , 0)) > 0 )
+            while( (read_size = recv(client_sock , message , MAX_MSG_LEN , 0)) > 0 )
             {
-                parse_msg(client_message);
+                if (t_cnt==0) clock_gettime(CLOCK_REALTIME, &start_time);
+                parse_msg(message);
                 //Send the message back to client
-                write(client_sock , client_message , strlen(client_message));
                 cli_tcnt[cli_cnt]++;
                 t_cnt++;
+                sprintf(message,"D%d",t_cnt);
+                write(client_sock , message , strlen(message));
                 tick();
             }
             
@@ -159,9 +160,7 @@ int main(int argc, char *argv[]){
     }
     printf("SUMMARY\n");
     for (int i=0;i<cli_cnt;i++) printf("%d transactions from %s\n",cli_tcnt[i],cli_name[i]);
-    struct timespec ntime;
-    clock_gettime(CLOCK_REALTIME,&ntime);
-    double elap=ntime.tv_sec-last_op_time.tv_sec+(ntime.tv_nsec-last_op_time.tv_nsec)*1e-9;
+    double elap=last_op_time.tv_sec-start_time.tv_sec+(last_op_time.tv_nsec-start_time.tv_nsec)*1e-9;
     printf("%.1f transactions/sec (%d/%.2f)\n",t_cnt/elap, t_cnt, elap);
 
     return 0;
