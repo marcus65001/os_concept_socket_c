@@ -139,7 +139,7 @@ int main(int argc, char *argv[]){
             
             if(read_size == 0)
             {
-                puts("Client disconnected");
+                puts("[DEBUG] Client disconnected");
                 fflush(stdout);
                 break;
             }
