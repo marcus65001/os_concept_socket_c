@@ -30,8 +30,8 @@ void print_log(int tn, int para, char *host) {
     printf("%ld.%02ld: #%3d (%s) from %s\n",ts.tv_sec,ts.tv_nsec/10000000,tn+1,s_para,host);
 }
 
-void error(char *msg){
-    fprintf(stdout,"Error %s.\n",msg);
+void error(char *msg,int ev){
+    fprintf(stdout,"Error %s:%s.\n",msg ,strerror(ev));
     exit(1);
 }
 
@@ -39,11 +39,11 @@ void parse_msg(char *msg) {
     char cmd;
     int para,rc;
     rc=sscanf(msg,"%c%d",&cmd,&para);
-    if (rc!=2) error("Invalid command format received.");
+    if (rc!=2) error("Invalid command format received.", EINVAL);
     if (cmd!='T') {
         char es[50];
         sprintf(es,"Invalid command \"%c\" received.",cmd);
-        error(es);
+        error(es,EINVAL);
     } else {
         print_log(t_cnt,para,cli_name[cli_cnt]);
         Trans(para);
@@ -67,7 +67,7 @@ int timeout(){
 
 int main(int argc, char *argv[]){
     if (argc<2){
-        error("Invalid argument");
+        error("Invalid command line argument",EINVAL);
     }
 
     int port=atoi(argv[1]);
@@ -79,11 +79,8 @@ int main(int argc, char *argv[]){
 	
 	//Create socket
 	socket_desc = socket(AF_INET , SOCK_STREAM|SOCK_NONBLOCK , 0);
-	if (socket_desc == -1)
-	{
-		printf("Could not create socket");
-	}
-	puts("[DEBUG] Socket created");
+	if (socket_desc == -1) error("Could not create socket", errno);
+	
 
     //Prepare the sockaddr_in structure
 	server.sin_family = AF_INET;
@@ -91,20 +88,12 @@ int main(int argc, char *argv[]){
 	server.sin_port = htons( port );
 
     //Bind
-	if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
-	{
-		//print the error message
-		perror("bind failed. Error");
-		return 1;
-	}
-	puts("[DEBUG] bind done");
+	if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0) error("Bind error:", errno);	
 	
 	//Listen
 	listen(socket_desc , MAX_CLIENT);
 	
 	//Accept and incoming connection
-	puts("[DEBUG] Waiting for incoming connections...");
-
     tick();
     while (!timeout()){
         c = sizeof(struct sockaddr_in);
@@ -121,7 +110,6 @@ int main(int argc, char *argv[]){
         }
 
         getnameinfo((struct sockaddr *) &client, c, cli_name[cli_cnt], sizeof(cli_name[cli_cnt]), NULL, 0, NI_NAMEREQD);
-        fprintf(stdout,"[DEBUG] Connection accepted from %s\n", cli_name[cli_cnt]);
 
         while (!timeout()){
             //Receive a message from client
@@ -139,7 +127,6 @@ int main(int argc, char *argv[]){
             
             if(read_size == 0)
             {
-                puts("[DEBUG] Client disconnected");
                 fflush(stdout);
                 break;
             }
@@ -148,7 +135,7 @@ int main(int argc, char *argv[]){
                 if (errno==EAGAIN || errno==EWOULDBLOCK){
                     continue;
                 }
-                perror("recv failed");
+                error("Recv failed",errno);
             }
         }
         cli_cnt++;

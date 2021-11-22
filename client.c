@@ -71,7 +71,7 @@ int main(int argc, char *argv[]){
         case 'T':
             print_log(0,'T',para);
             char message[MAX_MSG_LEN], reply[MAX_MSG_LEN];
-            sprintf(message,"T%d",para);
+            sprintf(message,"T%d\n",para);
             if( send(sock, message, strlen(message), 0) < 0) error("Send failed");
             snd_cnt++;
             //Receive a reply from the server
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]){
             int rpara;
             int pc=sscanf(reply,"%c%d",&rcmd,&rpara);
             if (pc!=2||rcmd!='D') error("Invalid reply");
-            print_log(1,'D',para);
+            print_log(1,'D',rpara);
             break;
         case 'S':
             // sleep
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]){
             break;
         }
     }
-    fprintf(stdout,"Sent %d transactions\n",snd_cnt);
+    fprintf(fout,"Sent %d transactions\n",snd_cnt);
     close(sock);
     fclose(fout);
     return 0;
