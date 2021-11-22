@@ -83,7 +83,7 @@ int main(int argc, char *argv[]){
 	{
 		printf("Could not create socket");
 	}
-	puts("Socket created");
+	puts("[DEBUG] Socket created");
 
     //Prepare the sockaddr_in structure
 	server.sin_family = AF_INET;
@@ -97,13 +97,13 @@ int main(int argc, char *argv[]){
 		perror("bind failed. Error");
 		return 1;
 	}
-	puts("bind done");
+	puts("[DEBUG] bind done");
 	
 	//Listen
 	listen(socket_desc , MAX_CLIENT);
 	
 	//Accept and incoming connection
-	puts("Waiting for incoming connections...");
+	puts("[DEBUG] Waiting for incoming connections...");
 
     tick();
     while (!timeout()){
