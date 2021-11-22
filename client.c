@@ -1,6 +1,9 @@
+#include "tands.h"
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -15,7 +18,7 @@ void print_log(int type, char cmd, int para) { // type = -1: sleep, 0: send, 1: 
         fprintf(fout,"Sleep %d units", para);
     } else {
         char s_type[5];
-        if (type=0) sprintf(s_type,"Send");
+        if (type==0) sprintf(s_type,"Send");
             else sprintf(s_type,"Recv");
         struct timespec ts;
         clock_gettime(CLOCK_REALTIME, &ts);
@@ -26,18 +29,18 @@ void print_log(int type, char cmd, int para) { // type = -1: sleep, 0: send, 1: 
 void error(char *msg){
     fprintf(stdout,"Error: %s\n", msg);
     close(sock);
-    close(fout);
+    fclose(fout);
     exit(-1);
 }
 
 int main(int argc, char *argv[]){
     if (argc<3){
-        err("Invalid argument");
+        error("Invalid argument");
     }
     char *str_srv_addr=argv[2];
     int port=atoi(argv[1]);
 
-    char local_name[255], log_fn[255];
+    char local_name[255], log_fn[300];
     pid_t pid;
     gethostname(local_name,255);
     pid=getpid();
@@ -48,9 +51,9 @@ int main(int argc, char *argv[]){
     sock=socket(AF_INET,SOCK_STREAM,0);
     struct sockaddr_in srv_addr={.sin_addr.s_addr=inet_addr(str_srv_addr),.sin_family=AF_INET,.sin_port=htons(port)};
 
-    fprintf(fout,"Using port %d",port);
-    fprintf(fout,"Using server address %s", str_srv_addr);
-    fprintf(fout,"Host %s",local_name);
+    fprintf(fout,"Using port %d\n",port);
+    fprintf(fout,"Using server address %s\n", str_srv_addr);
+    fprintf(fout,"Host %s\n",local_name);
 
     if (connect(sock , (struct sockaddr *)&srv_addr , sizeof(srv_addr)) < 0)
 	{
@@ -77,7 +80,7 @@ int main(int argc, char *argv[]){
             int rpara;
             int pc=sscanf(reply,"%c%d",&rcmd,&rpara);
             if (pc!=2||rcmd!='D') error("Invalid reply");
-            print_log(1,"D",para);
+            print_log(1,'D',para);
             break;
         case 'S':
             // sleep
@@ -89,8 +92,8 @@ int main(int argc, char *argv[]){
             break;
         }
     }
-    fprintf(stdout,"Sent %d transactions",snd_cnt);
+    fprintf(stdout,"Sent %d transactions\n",snd_cnt);
     close(sock);
-    close(fout);
+    fclose(fout);
     return 0;
 }

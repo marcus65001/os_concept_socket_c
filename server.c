@@ -18,11 +18,6 @@ int t_cnt,cli_cnt;
 char cli_name[MAX_CLIENT][255];
 int cli_tcnt[MAX_CLIENT];
 
-void err(char *msg){
-    printf("Error: %s\n", msg);
-    exit(-1);
-}
-
 void print_log(int tn, int para, char *host) {
     char s_para[5];
     if (para<0) {sprintf(s_para,"Done");}
@@ -72,7 +67,7 @@ int timeout(){
 
 int main(int argc, char *argv[]){
     if (argc<2){
-        err("Invalid argument");
+        error("Invalid argument");
     }
 
     int port=atoi(argv[1]);
