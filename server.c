@@ -18,8 +18,8 @@ int t_cnt,cli_cnt;
 char cli_name[MAX_CLIENT][255];
 int cli_tcnt[MAX_CLIENT];
 
-void err(char *disp){
-    printf("Error: %s\n", disp);
+void err(char *msg){
+    printf("Error: %s\n", msg);
     exit(-1);
 }
 
