@@ -15,7 +15,7 @@ int sock, snd_cnt;
 
 void print_log(int type, char cmd, int para) { // type = -1: sleep, 0: send, 1: recv;
     if (type==-1){
-        fprintf(fout,"Sleep %d units", para);
+        fprintf(fout,"Sleep %d units\n", para);
     } else {
         char s_type[5];
         if (type==0) sprintf(s_type,"Send");

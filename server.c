@@ -127,7 +127,7 @@ int main(int argc, char *argv[]){
             //Receive a message from client
             while( (read_size = recv(client_sock , message , MAX_MSG_LEN , 0)) > 0 )
             {
-                if (t_cnt==0) clock_gettime(CLOCK_REALTIME, &start_time);
+                if (t_cnt==0) clock_gettime(CLOCK_MONOTONIC, &start_time);
                 parse_msg(message);
                 //Send the message back to client
                 cli_tcnt[cli_cnt]++;
