@@ -117,7 +117,7 @@ int main(int argc, char *argv[]){
 
         // get client host name
         int gn_result=getnameinfo((struct sockaddr *) &client, c, cli_name[cli_cnt], sizeof(cli_name[cli_cnt]), NULL, 0, NI_NAMEREQD);
-        if (gn_result!=0) error(gai_strerror(gn_result),0);
+        if (gn_result!=0) error((char *) gai_strerror(gn_result),0);
 
         // loop until timeout
         while (!timeout()){
@@ -130,7 +130,8 @@ int main(int argc, char *argv[]){
                 cli_tcnt[cli_cnt]++;
                 t_cnt++;
                 sprintf(message,"D%d",t_cnt);
-                write(client_sock , message , strlen(message));  //Send the respose message back to client
+                if (write(client_sock , message , strlen(message))<0)
+                    error("Write error", errno);  //Send the respose message back to client
                 tick();  // reset timer
             }
             
