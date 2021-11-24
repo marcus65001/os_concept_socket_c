@@ -19,7 +19,7 @@ char cli_name[MAX_CLIENT][255];
 int cli_tcnt[MAX_CLIENT];
 
 void print_log(int tn, int para, char *host) {
-    char s_para[5];
+    char s_para[12];
     if (para<0) {sprintf(s_para,"Done");}
     else
     {
@@ -116,7 +116,8 @@ int main(int argc, char *argv[]){
         }
 
         // get client host name
-        getnameinfo((struct sockaddr *) &client, c, cli_name[cli_cnt], sizeof(cli_name[cli_cnt]), NULL, 0, NI_NAMEREQD);
+        int gn_result=getnameinfo((struct sockaddr *) &client, c, cli_name[cli_cnt], sizeof(cli_name[cli_cnt]), NULL, 0, NI_NAMEREQD);
+        if (gn_result!=0) error(gai_strerror(gn_result),0);
 
         // loop until timeout
         while (!timeout()){
