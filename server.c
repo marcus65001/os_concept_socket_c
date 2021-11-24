@@ -31,6 +31,7 @@ void print_log(int tn, int para, char *host) {
 }
 
 void error(char *msg,int ev){
+    // print out error message and exit
     fprintf(stdout,"Error %s:%s.\n",msg ,strerror(ev));
     exit(1);
 }
@@ -39,14 +40,14 @@ void parse_msg(char *msg) {
     char cmd;
     int para,rc;
     rc=sscanf(msg,"%c%d",&cmd,&para);
-    if (rc!=2) error("Invalid command format received.", EINVAL);
+    if (rc!=2) error("Invalid command format received.", EINVAL);  // invalid command from client
     if (cmd!='T') {
         char es[50];
         sprintf(es,"Invalid command \"%c\" received.",cmd);
         error(es,EINVAL);
     } else {
         print_log(t_cnt,para,cli_name[cli_cnt]);
-        Trans(para);
+        Trans(para);  // execute the actual transaction
         print_log(t_cnt,-1,cli_name[cli_cnt]);
     }
 }
@@ -58,6 +59,8 @@ void tick(){
 int timeout(){
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
+    // check if timer is up
+    // we ignore minor differences in tv_nsec, the tv_sec part is precise enough for this purpose
     if (ts.tv_sec-last_op_time.tv_sec>TIMEOUT_SEC) {
         return 1;
     } else {
@@ -66,42 +69,45 @@ int timeout(){
 }
 
 int main(int argc, char *argv[]){
+    // invalid argument
     if (argc<2){
         error("Invalid command line argument",EINVAL);
     }
 
+    // get port number from command-line argument
     int port=atoi(argv[1]);
+    if (port<5000||port>64000) error("Invalid port range",EINVAL);
     printf("Using port %d\n", port);
 
     int socket_desc , client_sock , c , read_size;
 	struct sockaddr_in server , client;
 	char message[MAX_MSG_LEN];
 	
-	//Create socket
+	// create socket
 	socket_desc = socket(AF_INET , SOCK_STREAM|SOCK_NONBLOCK , 0);
 	if (socket_desc == -1) error("Could not create socket", errno);
-	
 
-    //Prepare the sockaddr_in structure
+    // initialize the sockaddr_in structure for server
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = INADDR_ANY;
 	server.sin_port = htons( port );
 
-    //Bind
+    // bind and check error
 	if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0) error("Bind error:", errno);	
 	
-	//Listen
+	// listen
 	listen(socket_desc , MAX_CLIENT);
 	
-	//Accept and incoming connection
+	// accept incoming connection
     tick();
     while (!timeout()){
         c = sizeof(struct sockaddr_in);
 	
-        //accept connection from an incoming client
+        // accept an incoming connection (non-blocking)
         client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c);
         if (client_sock < 0)
         {
+            // non-blocking accept check, keep looping if no connection pending
             if (errno==EAGAIN || errno==EWOULDBLOCK){
                 continue;
             }
@@ -109,32 +115,37 @@ int main(int argc, char *argv[]){
             return 1;
         }
 
+        // get client host name
         getnameinfo((struct sockaddr *) &client, c, cli_name[cli_cnt], sizeof(cli_name[cli_cnt]), NULL, 0, NI_NAMEREQD);
 
+        // loop until timeout
         while (!timeout()){
             //Receive a message from client
             while( (read_size = recv(client_sock , message , MAX_MSG_LEN , 0)) > 0 )
             {
-                if (t_cnt==0) clock_gettime(CLOCK_MONOTONIC, &start_time);
+                if (t_cnt==0) clock_gettime(CLOCK_MONOTONIC, &start_time);  // record first transaction time
+                // parse received command message
                 parse_msg(message);
-                //Send the message back to client
                 cli_tcnt[cli_cnt]++;
                 t_cnt++;
                 sprintf(message,"D%d",t_cnt);
-                write(client_sock , message , strlen(message));
-                tick();
+                write(client_sock , message , strlen(message));  //Send the respose message back to client
+                tick();  // reset timer
             }
             
             if(read_size == 0)
             {
+                // client disconnected
                 fflush(stdout);
                 break;
             }
             else if(read_size == -1)
             {   
+                // non-blocking read check, keep looping if no pending message
                 if (errno==EAGAIN || errno==EWOULDBLOCK){
                     continue;
                 }
+                // actual error occurred
                 error("Recv failed",errno);
             }
         }
@@ -142,6 +153,7 @@ int main(int argc, char *argv[]){
     }
     printf("SUMMARY\n");
     for (int i=0;i<cli_cnt;i++) printf("%d transactions from %s\n",cli_tcnt[i],cli_name[i]);
+    // calculate elapsed time
     double elap=last_op_time.tv_sec-start_time.tv_sec+(last_op_time.tv_nsec-start_time.tv_nsec)*1e-9;
     printf("%.1f transactions/sec (%d/%.2f)\n",t_cnt/elap, t_cnt, elap);
 
