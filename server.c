@@ -32,7 +32,8 @@ void print_log(int tn, int para, char *host) {
 
 void error(char *msg,int ev){
     // print out error message and exit
-    fprintf(stdout,"Error %s:%s.\n",msg ,strerror(ev));
+    if (ev>0) fprintf(stdout,"Error %s: %s.\n",msg ,strerror(ev));
+        else fprintf(stdout,"Error %s.\n", msg);
     exit(1);
 }
 
@@ -44,7 +45,7 @@ void parse_msg(char *msg) {
     if (cmd!='T') {
         char es[50];
         sprintf(es,"Invalid command \"%c\" received.",cmd);
-        error(es,EINVAL);
+        error(es, EINVAL);
     } else {
         print_log(t_cnt,para,cli_name[cli_cnt]);
         Trans(para);  // execute the actual transaction
