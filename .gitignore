@@ -1,1 +1,7 @@
 .vscode/c_cpp_properties.json
+client
+client.o
+server
+server.o
+tands.o
+*.in
