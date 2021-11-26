@@ -8,7 +8,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#define MAX_MSG_LEN 255
+#define MAX_MSG_LEN 300
 
 FILE *fout;
 int sock, snd_cnt;
@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
     }
 
     // get client hostname
-    char local_name[255], log_fn[300];
+    char local_name[255], log_fn[270];
     gethostname(local_name,255);
 
     // generate log file name
@@ -70,15 +70,6 @@ int main(int argc, char *argv[]){
     fprintf(fout,"Host %s\n",local_name);
     
     // create socket
-    // sock=socket(AF_INET,SOCK_STREAM,0);
-    // struct sockaddr_in srv_addr={.sin_addr.s_addr=inet_addr(str_srv_addr),.sin_family=AF_INET,.sin_port=htons(port)};
-
-    // if (connect(sock , (struct sockaddr *)&srv_addr , sizeof(srv_addr)) < 0)
-	// {
-	// 	perror("Connect failed");
-	// 	return 1;
-	// }
-
     for (rp = res; rp != NULL; rp = rp->ai_next) {
         sock = socket(rp->ai_family, rp->ai_socktype,
                     rp->ai_protocol);
@@ -97,7 +88,12 @@ int main(int argc, char *argv[]){
         error("Could not connect to server.");
         exit(EXIT_FAILURE);
     }
-
+    char fmsg[MAX_MSG_LEN];
+    sprintf(fmsg,"%s\n",log_fn);
+    if( send(sock, fmsg, strlen(fmsg), 0) < 0) error("Send failed");
+    char ack[MAX_MSG_LEN];
+    if( recv(sock, ack, MAX_MSG_LEN, 0) < 0) error("recv failed");
+    if (strcmp(log_fn,ack)!=0) error("Validation error");
     int rc,para;
     char s_in[255],cmd;
     while (fgets(s_in,255,stdin)!=NULL) {

@@ -9,13 +9,13 @@
 #include <time.h>
 #include <errno.h>
 
-#define MAX_MSG_LEN 255
+#define MAX_MSG_LEN 300
 #define MAX_CLIENT 11
 #define TIMEOUT_SEC 30
 
 struct timespec last_op_time, start_time;
 int t_cnt,cli_cnt;
-char cli_name[MAX_CLIENT][255];
+char cli_name[MAX_CLIENT][MAX_MSG_LEN];
 int cli_tcnt[MAX_CLIENT];
 
 void print_log(int tn, int para, char *host) {
@@ -117,22 +117,28 @@ int main(int argc, char *argv[]){
         }
 
         // get client host name
-        int gn_result=getnameinfo((struct sockaddr *) &client, c, cli_name[cli_cnt], sizeof(cli_name[cli_cnt]), NULL, 0, NI_NAMEREQD);
-        if (gn_result!=0) error((char *) gai_strerror(gn_result),0);
+        // int gn_result=getnameinfo((struct sockaddr *) &client, c, cli_name[cli_cnt], sizeof(cli_name[cli_cnt]), NULL, 0, NI_NAMEREQD);
+        // if (gn_result!=0) error((char *) gai_strerror(gn_result),0);
+        
 
         // loop until timeout
         while (!timeout()){
             //Receive a message from client
             while( (read_size = recv(client_sock , message , MAX_MSG_LEN , 0)) > 0 )
             {
-                if (t_cnt==0) clock_gettime(CLOCK_MONOTONIC, &start_time);  // record first transaction time
-                // parse received command message
-                parse_msg(message);
-                cli_tcnt[cli_cnt]++;
-                t_cnt++;
-                sprintf(message,"D%d",t_cnt);
-                if (write(client_sock , message , strlen(message))<0)
-                    error("Write error", errno);  //Send the respose message back to client
+                if (t_cnt==0) {
+                    clock_gettime(CLOCK_MONOTONIC, &start_time);  // record first transaction time
+                    sprintf(cli_name[cli_cnt],"%s",message);
+                    sprintf(message,"%s\n",cli_name[cli_cnt]);
+                } else {
+                    // parse received command message
+                    parse_msg(message);
+                    cli_tcnt[cli_cnt]++;
+                    t_cnt++;
+                    sprintf(message,"D%d\n",t_cnt);
+                }
+                if (write(client_sock , message , strlen(message))<0)  //Send the respose message back to client
+                    error("Write error", errno);
                 tick();  // reset timer
             }
             
