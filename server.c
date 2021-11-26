@@ -32,8 +32,8 @@ void print_log(int tn, int para, char *host) {
 
 void error(char *msg,int ev){
     // print out error message and exit
-    if (ev>0) fprintf(stdout,"Error %s: %s.\n",msg ,strerror(ev));
-        else fprintf(stdout,"Error %s.\n", msg);
+    if (ev>0) fprintf(stdout,"Error %s%s.\n",msg ,strerror(ev));
+        else fprintf(stdout,"Error %s\n", msg);
     exit(1);
 }
 
@@ -157,7 +157,9 @@ int main(int argc, char *argv[]){
     printf("SUMMARY\n");
     for (int i=0;i<cli_cnt;i++) printf("%d transactions from %s\n",cli_tcnt[i],cli_name[i]);
     // calculate elapsed time
-    double elap=last_op_time.tv_sec-start_time.tv_sec+(last_op_time.tv_nsec-start_time.tv_nsec)*1e-9;
+    double elap=0.0;
+    if (t_cnt>0)
+        elap=last_op_time.tv_sec-start_time.tv_sec+(last_op_time.tv_nsec-start_time.tv_nsec)*1e-9;
     printf("%.1f transactions/sec (%d/%.2f)\n",t_cnt/elap, t_cnt, elap);
 
     return 0;
