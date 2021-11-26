@@ -92,6 +92,12 @@ int main(int argc, char *argv[]){
     }
     freeaddrinfo(res);
 
+    // check if any address succeeded
+    if (rp == NULL) {
+        error("Could not connect to server.");
+        exit(EXIT_FAILURE);
+    }
+
     int rc,para;
     char s_in[255],cmd;
     while (fgets(s_in,255,stdin)!=NULL) {

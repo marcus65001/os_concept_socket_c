@@ -158,9 +158,12 @@ int main(int argc, char *argv[]){
     for (int i=0;i<cli_cnt;i++) printf("%d transactions from %s\n",cli_tcnt[i],cli_name[i]);
     // calculate elapsed time
     double elap=0.0;
-    if (t_cnt>0)
+    if (t_cnt>0){
         elap=last_op_time.tv_sec-start_time.tv_sec+(last_op_time.tv_nsec-start_time.tv_nsec)*1e-9;
-    printf("%.1f transactions/sec (%d/%.2f)\n",t_cnt/elap, t_cnt, elap);
+        printf("%.1f transactions/sec (%d/%.2f)\n",t_cnt/elap, t_cnt, elap);
+    } else {
+        printf("0 transactions/sec (0/0)\n");
+    }        
 
     return 0;
 }
