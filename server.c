@@ -128,7 +128,7 @@ int main(int argc, char *argv[]){
             {
                 if (t_cnt==0) {
                     clock_gettime(CLOCK_MONOTONIC, &start_time);  // record first transaction time
-                    sprintf(cli_name[cli_cnt],"%s",message);
+                    sscanf(message,"%s\n",cli_name[cli_cnt]);
                     sprintf(message,"%s\n",cli_name[cli_cnt]);
                 } else {
                     // parse received command message

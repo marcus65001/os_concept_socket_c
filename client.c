@@ -93,6 +93,7 @@ int main(int argc, char *argv[]){
     if( send(sock, fmsg, strlen(fmsg), 0) < 0) error("Send failed");
     char ack[MAX_MSG_LEN];
     if( recv(sock, ack, MAX_MSG_LEN, 0) < 0) error("recv failed");
+    printf("%s",ack);    
     if (strcmp(log_fn,ack)!=0) error("Validation error");
     int rc,para;
     char s_in[255],cmd;
