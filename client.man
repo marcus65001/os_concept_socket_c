@@ -1,0 +1,25 @@
+.TH CLIENT 1 "Nov 26, 2021"
+.SH NAME
+client \- Client of CMPUT 379 Assignment 3
+.SH SYNOPSIS
+\fBclient\fP \fIport\fP \fIport\fP \fIip-address\fP
+.SH DESCRIPTION
+\fBclient\fP connects to the \fBserver\fP with specified \fIip-address\fP and \fIport\fP and reads
+commands from stdin. The commands will be sent to the server and processed remotely.
+The \fBclient\fP waits for a reply from the \fBserver\fP indicating the previous command
+is processed. When all commands are processed in the stdin, the client exits.
+.SS COMMANDS
+.TP
+\fCT<n>\fR Transaction
+The parameter \fIn\fP is an integer > 0. This command will be sent to the \fBserver\fP
+for processing. The \fBclient\fP sits idle waiting for the \fBserver\fP to complete the transaction.
+.TP
+\fCS<n>\fR Sleep
+The \fBclient\fP waits for a time determined by integer parameter \fIn\fP, with \fIn\fP 
+between 0 and 100. The actual routine called is the \fCvoid Sleep(n)\fR from the tands.h.
+
+.SH FILES
+\fC./machinename.pid\fR
+The log produced when the \fBclient\fP runs on \fImachinename\fP with \fIpid\fP.
+.SH "SEE ALSO"
+server(1)

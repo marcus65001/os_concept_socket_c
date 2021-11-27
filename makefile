@@ -20,6 +20,6 @@ man:
 	groff -Tpdf -man client.man > client.pdf
 test: testgen default
 zip:
-	zip a3.zip client.c server.c tands.c tands.h makefile
+	zip a3.zip client.c server.c tands.c tands.h makefile server.man client.man README
 clean:
 	rm -f *.o client server a3.zip *.log *.pdf
