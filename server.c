@@ -13,6 +13,7 @@
 #define MAX_CLIENT 11
 #define TIMEOUT_SEC 30
 
+FILE *fout;
 struct timespec last_op_time, start_time;
 int t_cnt,cli_cnt;
 char cli_name[MAX_CLIENT][MAX_MSG_LEN];
@@ -27,7 +28,7 @@ void print_log(int tn, int para, char *host) {
     }
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME,&ts);
-    printf("%ld.%02ld: #%3d (%s) from %s\n",ts.tv_sec,ts.tv_nsec/10000000,tn+1,s_para,host);
+    fprintf(fout,"%ld.%02ld: #%3d (%s) from %s\n",ts.tv_sec,ts.tv_nsec/10000000,tn+1,s_para,host);
 }
 
 void error(char *msg,int ev){
@@ -75,10 +76,22 @@ int main(int argc, char *argv[]){
         error("Invalid command line argument",EINVAL);
     }
 
+    // get local hostname
+    char local_name[255], log_fn[270];
+    gethostname(local_name,255);
+
+    // generate log file name
+    pid_t pid;
+    pid=getpid();
+    sprintf(log_fn,"%s.%d",local_name,(int) pid);
+
+    // open log file
+    fout=fopen(log_fn,"w");
+
     // get port number from command-line argument
     int port=atoi(argv[1]);
     if (port<5000||port>64000) error("Invalid port range",EINVAL);
-    printf("Using port %d\n", port);
+    fprintf(fout,"Using port %d\n", port);
 
     int socket_desc , client_sock , c , read_size;
 	struct sockaddr_in server , client;
@@ -126,10 +139,11 @@ int main(int argc, char *argv[]){
             //Receive a message from client
             while( (read_size = recv(client_sock , message , MAX_MSG_LEN , 0)) > 0 )
             {
-                if (t_cnt==0) {
-                    clock_gettime(CLOCK_MONOTONIC, &start_time);  // record first transaction time
+                if (t_cnt==0) clock_gettime(CLOCK_MONOTONIC, &start_time);  // record first transaction time
+                if (cli_tcnt[cli_cnt]==0) {
                     sscanf(message,"%s\n",cli_name[cli_cnt]);
                     sprintf(message,"%s\n",cli_name[cli_cnt]);
+                    cli_tcnt[cli_cnt]++;
                 } else {
                     // parse received command message
                     parse_msg(message);
@@ -146,7 +160,7 @@ int main(int argc, char *argv[]){
             {
                 // client disconnected
                 fflush(stdout);
-                break;
+                break;                
             }
             else if(read_size == -1)
             {   
@@ -158,17 +172,18 @@ int main(int argc, char *argv[]){
                 error("Recv failed",errno);
             }
         }
-        cli_cnt++;
+        cli_tcnt[cli_cnt]--;
+        cli_cnt++;        
     }
-    printf("SUMMARY\n");
-    for (int i=0;i<cli_cnt;i++) printf("%d transactions from %s\n",cli_tcnt[i],cli_name[i]);
+    fprintf(fout,"SUMMARY\n");
+    for (int i=0;i<cli_cnt;i++) fprintf(fout,"%d transactions from %s\n",cli_tcnt[i],cli_name[i]);
     // calculate elapsed time
     double elap=0.0;
-    if (t_cnt>0){
+    if (t_cnt>1){
         elap=last_op_time.tv_sec-start_time.tv_sec+(last_op_time.tv_nsec-start_time.tv_nsec)*1e-9;
-        printf("%.1f transactions/sec (%d/%.2f)\n",t_cnt/elap, t_cnt, elap);
+        fprintf(fout,"%.1f transactions/sec (%d/%.2f)\n",t_cnt/elap, t_cnt, elap);
     } else {
-        printf("0 transactions/sec (0/0)\n");
+        fprintf(fout,"0 transactions/sec (0/0)\n");
     }        
 
     return 0;

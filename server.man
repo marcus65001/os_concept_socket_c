@@ -1,0 +1,15 @@
+.TH SERVER 1 "Nov 26, 2021"
+.SH NAME
+server \- Server of CMPUT 379 Assignment 3
+.SH SYNOPSIS
+\fBserver\fP \fIport\fP
+.SH DESCRIPTION
+\fBserver\fP listens on the given \fIport\fP and wait for any incoming
+\fBclient\fP connection. When a connection is established, the server receives
+messages from the client and process them. The server will exit after 30 seconds
+of no incoming message.
+.SH FILES
+\fC./machinename.pid\fR
+The log produced when the \fBserver\fP runs on \fImachinename\fP with \fIpid\fP.
+.SH "SEE ALSO"
+client(1)

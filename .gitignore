@@ -5,3 +5,7 @@ server
 server.o
 tands.o
 *.in
+.vscode/configurationCache.log
+.vscode/dryrun.log
+.vscode/settings.json
+.vscode/targets.log
