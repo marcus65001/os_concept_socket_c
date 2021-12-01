@@ -151,7 +151,7 @@ int main(int argc, char *argv[]){
                     t_cnt++;
                     sprintf(message,"D%d\n",t_cnt);
                 }
-                if (write(client_sock , message , strlen(message))<0)  //Send the respose message back to client
+                if (write(client_sock , message , MAX_MSG_LEN)<0)  //Send the respose message back to client
                     error("Write error", errno);
                 tick();  // reset timer
             }
