@@ -24,15 +24,25 @@ The client first send its machine name and pid to the server, and a loop iterate
 from stdin and then send / execute them. If a command is sent, the client waits for server reply.
 
 # Instruction
-## Compile (or Re-compile) everything (clean build, including manual pages)
+
+## Compile and generate files
+### Compile (or Re-compile) everything (clean build, including manual pages)
 make
-## Compile server and client only, non-optimized
+### Compile server and client only, non-optimized
 make build_all
-## Compile server and client only, optimized
+### Compile server and client only, optimized
 make build_all_optimized
-## Generate manual pages (in pdf)
+### Generate manual pages (in pdf)
 make man
-## Clean
+### Clean
 make clean
-## Make zip file
+### Make zip file
 make zip
+
+## Run
+### Run server
+./server port
+### Run client
+./client port ip-address
+The client reads in from stdin by default, so if the input is from file, use:
+./client port ip-address <inputfile
