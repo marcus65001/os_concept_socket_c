@@ -65,7 +65,7 @@ int main(int argc, char *argv[]){
     struct sockaddr_in srv_addr={.sin_addr.s_addr=inet_addr(str_srv_addr),.sin_family=AF_INET,.sin_port=htons(port)};
 
     // connect socket
-    if (connect(sock , (struct sockaddr *)&srv_addr , sizeof(srv_addr)) < 0)
+    if (connect(sock, (struct sockaddr *)&srv_addr, sizeof(srv_addr)) < 0)
 	{
 		perror("Connect failed. Error: ");
 		return 1;
@@ -74,11 +74,11 @@ int main(int argc, char *argv[]){
     // send hostname and pid to server
     char fmsg[MAX_MSG_LEN];
     sprintf(fmsg,"%s\n",log_fn);
-    if( send(sock, fmsg, strlen(fmsg), 0) < 0) error("Send failed");
+    if (send(sock, fmsg, strlen(fmsg), 0) < 0) error("Send failed");
 
     // read acknowledge message from server
     char ack[MAX_MSG_LEN];
-    if( recv(sock, ack, MAX_MSG_LEN, 0) < 0) error("recv failed");
+    if (recv(sock, ack, MAX_MSG_LEN, 0) < 0) error("recv failed");
     ack[strcspn(ack, "\n")] = 0;
 
     // validate message
@@ -100,8 +100,9 @@ int main(int argc, char *argv[]){
             print_log(0,'T',para);
             // send to server
             char message[MAX_MSG_LEN], reply[MAX_MSG_LEN];
+            memset(message, 0, sizeof(message));
             sprintf(message,"T%d\n",para);
-            if( send(sock, message, MAX_MSG_LEN, 0) < 0) error("Send failed");
+            if (send(sock, message, MAX_MSG_LEN, 0) < 0) error("Send failed");
             snd_cnt++;
             // wait for and read reply (done message) from server
             if (recv(sock, reply, MAX_MSG_LEN, 0) < 0) error("recv failed");

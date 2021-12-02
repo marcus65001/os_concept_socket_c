@@ -1,15 +1,17 @@
 CC = gcc
 CFLAGS = -O
-CFLAGS_DEBUG = -Wall -g
+CFLAGS_DEBUG = -Wall -g3
 
 srv_obj = server.o tands.o
 cli_obj = client.o tands.o
 default: clean build_all_optimized man
-build_all: server client
+debug: server_dbg client_dbg
 build_all_optimized: server_opt client_opt
-server: $(srv_obj)
+server_dbg: tands.o
+	$(CC) $(CFLAGS_DEBUG) -c -o server.o server.c
 	$(CC) $(CFLAGS_DEBUG) -o server $(srv_obj)
-client: $(cli_obj)
+client_dbg: tands.o
+	$(CC) $(CFLAGS_DEBUG) -c -o client.o client.c
 	$(CC) $(CFLAGS_DEBUG) -o client $(cli_obj)
 server_opt: $(srv_obj)
 	$(CC) $(CFLAGS) -o server $(srv_obj)
