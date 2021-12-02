@@ -107,7 +107,7 @@ int main(int argc, char *argv[]){
 	server.sin_port = htons( port );
 
     // bind and check error
-	if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0) error("Bind error:", errno);	
+	if (bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0) error("Bind error:", errno);	
 	
 	// listen
 	listen(socket_desc , MAX_CLIENT);
@@ -179,7 +179,8 @@ int main(int argc, char *argv[]){
         fprintf(fout,"%.1f transactions/sec (%d/%.2f)\n",t_cnt/elap, t_cnt, elap);
     } else {
         fprintf(fout,"0 transactions/sec (0/0)\n");
-    }        
-
+    }
+    close(socket_desc);
+    fclose(fout);
     return 0;
 }
