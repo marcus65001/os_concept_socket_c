@@ -127,12 +127,7 @@ int main(int argc, char *argv[]){
             }
             perror("accept failed");
             return 1;
-        }
-
-        // get client host name
-        // int gn_result=getnameinfo((struct sockaddr *) &client, c, cli_name[cli_cnt], sizeof(cli_name[cli_cnt]), NULL, 0, NI_NAMEREQD);
-        // if (gn_result!=0) error((char *) gai_strerror(gn_result),0);
-        
+        }        
 
         // loop until timeout
         while (!timeout()){

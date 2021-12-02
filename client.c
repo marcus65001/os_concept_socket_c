@@ -13,6 +13,7 @@
 FILE *fout;
 int sock, snd_cnt;
 
+// function to print a log entry
 void print_log(int type, char cmd, int para) { // type = -1: sleep, 0: send, 1: recv;
     if (type==-1){
         fprintf(fout,"Sleep %d units\n", para);
@@ -26,6 +27,7 @@ void print_log(int type, char cmd, int para) { // type = -1: sleep, 0: send, 1: 
     }    
 }
 
+// print out error message and exit
 void error(char *msg){
     fprintf(stdout,"Error: %s\n", msg);
     close(sock);
@@ -39,18 +41,7 @@ int main(int argc, char *argv[]){
     }
     // get command-line arguments
     char *str_srv_addr=argv[2];
-    char *port=argv[1];
-
-    // get server address from hostname
-    struct addrinfo *res, *rp;
-    struct addrinfo hints;
-    memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family=AF_INET;
-    hints.ai_socktype=SOCK_STREAM;
-    int s_ai = getaddrinfo(str_srv_addr,port,&hints,&res);
-    if (s_ai != 0) {
-        error((char *)gai_strerror(s_ai));
-    }
+    int port=atoi(argv[1]);
 
     // get client hostname
     char local_name[255], log_fn[270];
@@ -65,56 +56,61 @@ int main(int argc, char *argv[]){
     fout=fopen(log_fn,"w");
 
     // print out info
-    fprintf(fout,"Using port %s\n",port);
+    fprintf(fout,"Using port %d\n",port);
     fprintf(fout,"Using server address %s\n", str_srv_addr);
-    fprintf(fout,"Host %s\n",local_name);
+    fprintf(fout,"Host %s\n",log_fn);
     
     // create socket
-    for (rp = res; rp != NULL; rp = rp->ai_next) {
-        sock = socket(rp->ai_family, rp->ai_socktype,
-                    rp->ai_protocol);
-        if (sock == -1)
-            continue;
+    sock=socket(AF_INET,SOCK_STREAM,0);
+    struct sockaddr_in srv_addr={.sin_addr.s_addr=inet_addr(str_srv_addr),.sin_family=AF_INET,.sin_port=htons(port)};
 
-        if (connect(sock, rp->ai_addr, rp->ai_addrlen) != -1)
-            break;                  /* Success */
+    // connect socket
+    if (connect(sock , (struct sockaddr *)&srv_addr , sizeof(srv_addr)) < 0)
+	{
+		perror("Connect failed. Error: ");
+		return 1;
+	}
 
-        close(sock);
-    }
-    freeaddrinfo(res);
-
-    // check if any address succeeded
-    if (rp == NULL) {
-        error("Could not connect to server.");
-        exit(EXIT_FAILURE);
-    }
+    // send hostname and pid to server
     char fmsg[MAX_MSG_LEN];
     sprintf(fmsg,"%s\n",log_fn);
     if( send(sock, fmsg, strlen(fmsg), 0) < 0) error("Send failed");
+
+    // read acknowledge message from server
     char ack[MAX_MSG_LEN];
     if( recv(sock, ack, MAX_MSG_LEN, 0) < 0) error("recv failed");
     ack[strcspn(ack, "\n")] = 0;
+
+    // validate message
     if (strcmp(log_fn,ack)!=0) error("Validation error");
+
+    // start reading and sending commands
     int rc,para;
     char s_in[255],cmd;
     while (fgets(s_in,255,stdin)!=NULL) {
+        // read command from stdin
         rc=sscanf(s_in,"%c%d",&cmd,&para);
+        // check command format
         if (rc!=2) error("Invalid command");
+        // process commands
         switch (cmd)
         {
         case 'T':
+            // print to log
             print_log(0,'T',para);
+            // send to server
             char message[MAX_MSG_LEN], reply[MAX_MSG_LEN];
             sprintf(message,"T%d\n",para);
-            if( send(sock, message, strlen(message), 0) < 0) error("Send failed");
+            if (send(sock, message, strlen(message), 0) < 0) error("Send failed");
             snd_cnt++;
-            //Receive a reply from the server
-            if( recv(sock, reply, MAX_MSG_LEN, 0) < 0) error("recv failed");
+            // wait for and read reply (done message) from server
+            if (recv(sock, reply, MAX_MSG_LEN, 0) < 0) error("recv failed");
+            // validate server reply
             char rcmd;
             int rpara;
-            //printf("[Debug]:%s",reply);
-            int pc=sscanf(reply,"%c%d\n",&rcmd,&rpara);            
+            int pc=sscanf(reply,"%c%d\n",&rcmd,&rpara);
             if (pc!=2||rcmd!='D') error("Invalid reply");
+            // print log
             print_log(1,'D',rpara);
             break;
         case 'S':
