@@ -101,7 +101,7 @@ int main(int argc, char *argv[]){
             // send to server
             char message[MAX_MSG_LEN], reply[MAX_MSG_LEN];
             sprintf(message,"T%d\n",para);
-            if (send(sock, message, strlen(message), 0) < 0) error("Send failed");
+            if( send(sock, message, MAX_MSG_LEN, 0) < 0) error("Send failed");
             snd_cnt++;
             // wait for and read reply (done message) from server
             if (recv(sock, reply, MAX_MSG_LEN, 0) < 0) error("recv failed");
