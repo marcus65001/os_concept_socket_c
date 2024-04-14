@@ -1,6 +1,6 @@
 .TH SERVER 1 "Nov 26, 2021"
 .SH NAME
-server \- Server of CMPUT 379 Assignment 3
+server \- Transaction Server
 .SH SYNOPSIS
 \fBserver\fP \fIport\fP
 .SH DESCRIPTION
