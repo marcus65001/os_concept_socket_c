@@ -1,6 +1,6 @@
 .TH CLIENT 1 "Nov 26, 2021"
 .SH NAME
-client \- Client of CMPUT 379 Assignment 3
+client \- Transaction Client
 .SH SYNOPSIS
 \fBclient\fP \fIport\fP \fIport\fP \fIip-address\fP
 .SH DESCRIPTION
