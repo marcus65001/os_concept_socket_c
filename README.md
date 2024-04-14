@@ -45,5 +45,7 @@ make
 `./server port`
 ### Run client
 `./client port ip-address`
+
 The client reads in from stdin by default, so if the input is from file, use:
+
 `./client port ip-address < inputfile`
